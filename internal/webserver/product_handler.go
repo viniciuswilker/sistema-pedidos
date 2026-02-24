@@ -23,7 +23,7 @@ func (h *ProductHandler) CreateProduct(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	product.ID = uuid.New().String() // Gera ID único
+	product.ID = uuid.New().String() 
 	if err := h.ProductDB.Create(&product); err != nil {
 		http.Error(w, "Erro ao salvar produto", http.StatusInternalServerError)
 		return
