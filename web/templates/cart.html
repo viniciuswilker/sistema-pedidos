@@ -1,0 +1,162 @@
+{{define "content"}}
+<div class="cart-container">
+    <header class="cart-header">
+        <button class="btn-back" onclick="location.href='/menu'">← Continuar Comprando</button>
+        <h2>Meu Pedido</h2>
+    </header>
+
+    <div class="cart-content">
+        <section class="cart-items" id="cart-items-list">
+        </section>
+
+        <aside class="cart-summary">
+            <div class="summary-box">
+                <h3>Finalizar</h3>
+                <div class="input-group">
+                    <label>CPF (Opcional)</label>
+                    <input type="text" id="customer-cpf" placeholder="000.000.000-00" maxlength="14">
+                </div>
+
+                <div class="input-group">
+                    <label>Método de Pagamento</label>
+                    <select id="payment-method">
+                        <option value="credit_card">Cartão de Crédito</option>
+                        <option value="debit_card">Cartão de Débito</option>
+                        <option value="pix">PIX (Totem)</option>
+                    </select>
+                </div>
+
+                <div class="total-row">
+                    <span>Total:</span>
+                    <span id="cart-total">R$ 0,00</span>
+                </div>
+
+                <button class="btn-checkout" onclick="checkout()">FINALIZAR E PAGAR</button>
+            </div>
+        </aside>
+    </div>
+</div>
+
+<script>
+
+    let cart = JSON.parse(localStorage.getItem('kiosk_cart')) || [];
+
+    function saveCart() {
+        localStorage.setItem('kiosk_cart', JSON.stringify(cart));
+    }
+
+    function updateCartBadge() {
+        const badge = document.getElementById('cart-count');
+        if (badge) {
+            const total = cart.reduce((acc, item) => acc + item.quantity, 0);
+            badge.innerText = total;
+        }
+    }
+
+    function renderCart() {
+        const container = document.getElementById('cart-items-list');
+        const totalElement = document.getElementById('cart-total');
+
+        if (!container) return;
+
+        if (cart.length === 0) {
+            container.innerHTML = "<div class='empty-msg'><h3>Seu carrinho está vazio.</h3></div>";
+            if (totalElement) totalElement.innerText = "R$ 0,00";
+            return;
+        }
+
+        let total = 0;
+        container.innerHTML = cart.map((item, index) => {
+            total += item.price * item.quantity;
+            return `
+            <div class="cart-item">
+                <div class="item-info">
+                    <h4>${item.name}</h4>
+                    <span>R$ ${item.price.toFixed(2)}</span>
+                </div>
+                <div class="item-actions">
+                    <button class="btn-qty" onclick="updateQuantity(${index}, -1)">-</button>
+                    <span class="qty-val">${item.quantity}</span>
+                    <button class="btn-qty" onclick="updateQuantity(${index}, 1)">+</button>
+                    <button class="btn-remove" onclick="removeItem(${index})">🗑️</button>
+                </div>
+            </div>`;
+        }).join('');
+
+        if (totalElement) totalElement.innerText = `R$ ${total.toFixed(2)}`;
+    }
+
+    window.updateQuantity = function (index, delta) {
+        cart[index].quantity += delta;
+        if (cart[index].quantity <= 0) cart.splice(index, 1);
+        saveCart();
+        renderCart();
+        updateCartBadge();
+    };
+
+    window.removeItem = function (index) {
+        cart.splice(index, 1);
+        saveCart();
+        renderCart();
+        updateCartBadge();
+    };
+
+
+    async function checkout() {
+        if (cart.length === 0) {
+            alert("Seu carrinho está vazio!");
+            return;
+        }
+
+        const customerCPF = document.getElementById('customer-cpf').value;
+        const paymentMethod = document.getElementById('payment-method').value;
+
+        // Monta o DTO esperado pelo Go
+        const orderPayload = {
+            customer_cpf: customerCPF,
+            payment_method: paymentMethod,
+            items: cart.map(item => ({
+                product_id: item.product_id,
+                quantity: item.quantity
+            }))
+        };
+
+        try {
+            const response = await fetch('/orders', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(orderPayload)
+            });
+
+            if (!response.ok) {
+                const errorText = await response.text();
+                throw new Error(errorText || "Erro ao processar pedido");
+            }
+
+            const result = await response.json();
+
+            localStorage.removeItem('kiosk_cart');
+            alert("Pedido #" + result.id + " realizado com sucesso!");
+            window.location.href = "/";
+
+        } catch (error) {
+            console.error("Erro no Checkout:", error);
+            alert("Falha ao finalizar pedido: " + error.message);
+        }
+    }
+
+
+    document.addEventListener("DOMContentLoaded", () => {
+        updateCartBadge();
+        renderCart();
+
+        if (document.getElementById('product-list')) {
+            loadProducts('food');
+        }
+    });
+
+</script>
+
+{{end}}

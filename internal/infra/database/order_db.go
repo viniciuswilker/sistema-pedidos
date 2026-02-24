@@ -37,3 +37,28 @@ func (o *OrderDB) Create(order *entity.Order) error {
 	}
 	return tx.Commit()
 }
+
+func (o *OrderDB) GetByID(id string) (*entity.Order, error) {
+	var order entity.Order
+	err := o.DB.QueryRow("SELECT id, customer_cpf, total, payment_method, created_at FROM orders WHERE id = ?", id).
+		Scan(&order.ID, &order.CustomerCPF, &order.Total, &order.PaymentMethod, &order.CreatedAt)
+	if err != nil {
+		return nil, err
+	}
+
+	rows, err := o.DB.Query("SELECT product_id, quantity, price FROM order_items WHERE order_id = ?", id)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var item entity.OrderItem
+		if err := rows.Scan(&item.ProductID, &item.Quantity, &item.Price); err != nil {
+			return nil, err
+		}
+		order.Items = append(order.Items, item)
+	}
+
+	return &order, nil
+}

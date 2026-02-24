@@ -31,6 +31,9 @@ func main() {
 	productDB := database.NewProductDB(db)
 	productHandler := webserver.NewProductHandler(productDB)
 
+	orderDB := database.NewOrderDB(db)
+	orderHandler := webserver.NewOrderHandler(orderDB, productDB)
+
 	r := chi.NewRouter()
 
 	r.Use(middleware.Logger)
@@ -41,6 +44,8 @@ func main() {
 
 	r.Post("/products", productHandler.CreateProduct)
 	r.Get("/products", productHandler.GetProducts)
+
+	r.Post("/orders", orderHandler.CreateOrder)
 
 	r.Get("/", func(w http.ResponseWriter, r *http.Request) {
 		tmpl, err := template.ParseFiles(
@@ -59,6 +64,18 @@ func main() {
 			"web/templates/layout.html",
 			"web/templates/menu.html",
 		))
+		tmpl.ExecuteTemplate(w, "layout", nil)
+	})
+
+	r.Get("/cart", func(w http.ResponseWriter, r *http.Request) {
+		tmpl, err := template.ParseFiles(
+			"web/templates/layout.html",
+			"web/templates/cart.html",
+		)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
 		tmpl.ExecuteTemplate(w, "layout", nil)
 	})
 

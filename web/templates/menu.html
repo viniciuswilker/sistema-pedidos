@@ -29,10 +29,8 @@
     </button>
 </div>
 <script>
-    // Estado global do carrinho (Tenta carregar do LocalStorage ou inicia vazio)
     let cart = JSON.parse(localStorage.getItem('kiosk_cart')) || [];
 
-    // Ao carregar o DOM, atualiza o contador e carrega a categoria inicial
     document.addEventListener("DOMContentLoaded", () => {
         updateCartBadge();
         loadProducts('food');
@@ -40,7 +38,7 @@
 
     async function loadProducts(category) {
         const container = document.getElementById('product-list');
-        container.innerHTML = "<p>Carregando...</p>"; // Feedback de carregamento
+        container.innerHTML = "<p>Carregando...</p>";
 
         try {
             const response = await fetch(`/products?category=${category}`);
@@ -63,7 +61,7 @@
 
         container.innerHTML = products.map(p => `
         <div class="product-card">
-            <img src="https://via.placeholder.com/150" alt="${p.name}">
+            <img src="" alt="${p.name}">
             <div class="product-info">
                 <h3>${p.name}</h3>
                 <p>${p.description}</p>
@@ -77,7 +75,6 @@
     }
 
     function addToCart(id, name, price) {
-        // Verifica se o item já está no carrinho para apenas aumentar a quantidade
         const existingItem = cart.find(item => item.product_id === id);
 
         if (existingItem) {
@@ -94,8 +91,6 @@
         saveCart();
         updateCartBadge();
 
-        // Feedback visual simples
-        console.log(`Adicionado: ${name}`);
     }
 
     function saveCart() {
