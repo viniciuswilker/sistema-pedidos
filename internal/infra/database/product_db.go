@@ -14,6 +14,18 @@ func NewProductDB(db *sql.DB) *ProductDB {
 	return &ProductDB{DB: db}
 }
 
+func (p *ProductDB) Create(product *entity.Product) error {
+	stmt, err := p.DB.Prepare("INSERT INTO products (id, name, price, category, description) VALUES (?,?,?,?,?)")
+	if err != nil {
+		return err
+	}
+	defer stmt.Close()
+
+	_, err = stmt.Exec(product.ID, product.Name, product.Price, product.Category, product.Description)
+	return err
+
+}
+
 func (p *ProductDB) FindByCategory(category string) ([]entity.Product, error) {
 	rows, err := p.DB.Query("SELECT id, name, price, category, description from product where category = ?", category)
 	if err != nil {
