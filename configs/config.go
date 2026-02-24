@@ -20,22 +20,19 @@ type conf struct {
 
 func LoadConfig(path string) (*conf, error) {
 	var cfg *conf
-	viper.SetConfigName("app_config")
-	viper.SetConfigType("env")
 	viper.AddConfigPath(path)
 	viper.SetConfigFile(".env")
+	viper.SetConfigType("env")
 	viper.AutomaticEnv()
-	err := viper.ReadInConfig()
-	if err != nil {
-		panic(err)
+
+	if err := viper.ReadInConfig(); err != nil {
+		return nil, err
 	}
 
-	erro := viper.Unmarshal(&cfg)
-	if erro != nil {
-		panic(erro)
+	if err := viper.Unmarshal(&cfg); err != nil {
+		return nil, err
 	}
 
 	cfg.TokenAuth = jwtauth.New("HS256", []byte(cfg.JWTSecret), nil)
 	return cfg, nil
-
 }

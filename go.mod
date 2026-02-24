@@ -4,6 +4,7 @@ go 1.25.0
 
 require (
 	github.com/go-chi/jwtauth v1.2.0
+	github.com/mattn/go-sqlite3 v1.14.34
 	github.com/spf13/viper v1.21.0
 )
 
