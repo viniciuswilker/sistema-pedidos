@@ -23,7 +23,7 @@ func (h *ProductHandler) CreateProduct(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	product.ID = uuid.New().String() 
+	product.ID = uuid.New().String()
 	if err := h.ProductDB.Create(&product); err != nil {
 		http.Error(w, "Erro ao salvar produto", http.StatusInternalServerError)
 		return
@@ -31,4 +31,24 @@ func (h *ProductHandler) CreateProduct(w http.ResponseWriter, r *http.Request) {
 
 	w.WriteHeader(http.StatusCreated)
 	json.NewEncoder(w).Encode(product)
+}
+
+func (h *ProductHandler) GetProducts(w http.ResponseWriter, r *http.Request) {
+	category := r.URL.Query().Get("category")
+	var products []entity.Product
+	var err error
+
+	if category != "" {
+		products, err = h.ProductDB.FindByCategory(entity.Category(category))
+	} else {
+		products, err = h.ProductDB.FindAll()
+	}
+
+	if err != nil {
+		http.Error(w, "Erro ao buscar produtos", http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(products)
 }

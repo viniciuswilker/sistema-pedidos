@@ -35,6 +35,8 @@ func main() {
 	r.Use(middleware.Recoverer)
 
 	r.Post("/products", productHandler.CreateProduct)
+	r.Get("/products", productHandler.GetProducts)
+
 	r.Get("/", func(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte("Testando"))
 	})
