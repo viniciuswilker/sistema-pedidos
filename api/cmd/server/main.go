@@ -3,6 +3,7 @@ package main
 import (
 	"database/sql"
 	"fmt"
+	"html/template"
 	"net/http"
 
 	"github.com/go-chi/chi"
@@ -31,14 +32,34 @@ func main() {
 	productHandler := webserver.NewProductHandler(productDB)
 
 	r := chi.NewRouter()
+
 	r.Use(middleware.Logger)
 	r.Use(middleware.Recoverer)
+
+	fs := http.FileServer(http.Dir("web/static"))
+	r.Handle("/static/*", http.StripPrefix("/static/", fs))
 
 	r.Post("/products", productHandler.CreateProduct)
 	r.Get("/products", productHandler.GetProducts)
 
 	r.Get("/", func(w http.ResponseWriter, r *http.Request) {
-		w.Write([]byte("Testando"))
+		tmpl, err := template.ParseFiles(
+			"web/templates/layout.html",
+			"web/templates/index.html",
+		)
+		if err != nil {
+			http.Error(w, "Erro ao carregar templates: "+err.Error(), http.StatusInternalServerError)
+			return
+		}
+		tmpl.ExecuteTemplate(w, "layout", nil)
+	})
+
+	r.Get("/menu", func(w http.ResponseWriter, r *http.Request) {
+		tmpl := template.Must(template.ParseFiles(
+			"web/templates/layout.html",
+			"web/templates/menu.html",
+		))
+		tmpl.ExecuteTemplate(w, "layout", nil)
 	})
 
 	fmt.Printf("Servidor rodando na porta %s\n", cfg.WebServerPort)

@@ -1,0 +1,41 @@
+{{define "layout"}}
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Autoatendimento - Sistema de Pedidos</title>
+
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href="/static/css/style.css">
+    <link rel="stylesheet" href="/static/css/inicio.css">
+</head>
+
+<body>
+    <div class="app-container">
+        <header class="main-header">
+            <div class="logo">
+                <span class="brand">FAST</span><span class="yellow">ORDER</span>
+            </div>
+            <div class="status-time" id="current-time">00:00</div>
+        </header>
+
+        <main class="content-area">
+            {{template "content" .}}
+        </main>
+    </div>
+
+    <script src="/static/js/cart.js"></script>
+    <script>
+        setInterval(() => {
+            const now = new Date();
+            document.getElementById('current-time').innerText =
+                now.toLocaleTimeString('pt-BR', { hour: '2-刻', minute: '2-digit' });
+        }, 1000);
+    </script>
+</body>
+
+</html>
+{{end}}

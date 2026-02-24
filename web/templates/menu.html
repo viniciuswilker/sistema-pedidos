@@ -1,0 +1,126 @@
+{{define "content"}}
+<div class="kiosk-container">
+    <aside class="sidebar">
+        <div class="category-item active" onclick="selectCategory(this, 'food')">
+            <img src="https://cdn-icons-png.flaticon.com/512/3075/3075977.png" alt="Lanches">
+            <span>Lanches</span>
+        </div>
+        <div class="category-item" onclick="selectCategory(this, 'drink')">
+            <img src="https://cdn-icons-png.flaticon.com/512/3121/3121784.png" alt="Bebidas">
+            <span>Bebidas</span>
+        </div>
+        <div class="category-item" onclick="selectCategory(this, 'addition')">
+            <img src="https://cdn-icons-png.flaticon.com/512/1046/1046788.png" alt="Acompanhamentos">
+            <span>Adicionais</span>
+        </div>
+    </aside>
+
+    <section class="main-content">
+        <h2 id="category-title">Destaques</h2>
+        <div id="product-list" class="products-grid">
+        </div>
+    </section>
+</div>
+
+<div class="bottom-bar">
+    <button class="btn-cart" onclick="location.href='/cart'">
+        <span class="icon">🛒</span>
+        Ver Carrinho (<span id="cart-count">0</span>)
+    </button>
+</div>
+<script>
+    // Estado global do carrinho (Tenta carregar do LocalStorage ou inicia vazio)
+    let cart = JSON.parse(localStorage.getItem('kiosk_cart')) || [];
+
+    // Ao carregar o DOM, atualiza o contador e carrega a categoria inicial
+    document.addEventListener("DOMContentLoaded", () => {
+        updateCartBadge();
+        loadProducts('food');
+    });
+
+    async function loadProducts(category) {
+        const container = document.getElementById('product-list');
+        container.innerHTML = "<p>Carregando...</p>"; // Feedback de carregamento
+
+        try {
+            const response = await fetch(`/products?category=${category}`);
+            if (!response.ok) throw new Error("Erro na API");
+
+            const products = await response.json();
+            renderProducts(products);
+        } catch (error) {
+            console.error("Erro:", error);
+            container.innerHTML = "<p>Erro ao carregar produtos.</p>";
+        }
+    }
+
+    function renderProducts(products) {
+        const container = document.getElementById('product-list');
+        if (!products || products.length === 0) {
+            container.innerHTML = "<p>Nenhum item nesta categoria.</p>";
+            return;
+        }
+
+        container.innerHTML = products.map(p => `
+        <div class="product-card">
+            <img src="https://via.placeholder.com/150" alt="${p.name}">
+            <div class="product-info">
+                <h3>${p.name}</h3>
+                <p>${p.description}</p>
+                <span class="price">R$ ${p.price.toFixed(2)}</span>
+                <button class="btn-add" onclick="addToCart('${p.id}', '${p.name}', ${p.price})">
+                    ADICIONAR
+                </button>
+            </div>
+        </div>
+    `).join('');
+    }
+
+    function addToCart(id, name, price) {
+        // Verifica se o item já está no carrinho para apenas aumentar a quantidade
+        const existingItem = cart.find(item => item.product_id === id);
+
+        if (existingItem) {
+            existingItem.quantity += 1;
+        } else {
+            cart.push({
+                product_id: id,
+                name: name,
+                price: price,
+                quantity: 1
+            });
+        }
+
+        saveCart();
+        updateCartBadge();
+
+        // Feedback visual simples
+        console.log(`Adicionado: ${name}`);
+    }
+
+    function saveCart() {
+        localStorage.setItem('kiosk_cart', JSON.stringify(cart));
+    }
+
+    function updateCartBadge() {
+        const badge = document.getElementById('cart-count');
+        if (badge) {
+            const totalItems = cart.reduce((acc, item) => acc + item.quantity, 0);
+            badge.innerText = totalItems;
+        }
+    }
+
+    function selectCategory(element, category) {
+        document.querySelectorAll('.category-item').forEach(el => el.classList.remove('active'));
+        element.classList.add('active');
+
+        const span = element.querySelector('span');
+        if (span) {
+            document.getElementById('category-title').innerText = span.innerText;
+        }
+
+        loadProducts(category);
+    }
+</script>
+
+{{end}}
