@@ -112,10 +112,14 @@
             alert("Seu carrinho está vazio!");
             return;
         }
-
         const customerCPF = document.getElementById('customer-cpf').value;
         const paymentMethod = document.getElementById('payment-method').value;
         const customerName = document.getElementById('customer-name').value;
+
+        if (customerName == "") {
+            alert('O nome é obrigatório')
+            return
+        }
 
         const orderPayload = {
             customer_cpf: customerCPF,
