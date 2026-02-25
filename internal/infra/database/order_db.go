@@ -2,6 +2,7 @@ package database
 
 import (
 	"database/sql"
+	"fmt"
 
 	"github.com/viniciuswilker/sistema-pedidos/internal/entity"
 )
@@ -20,8 +21,8 @@ func (o *OrderDB) Create(order *entity.Order) error {
 		return err
 	}
 
-	_, err = tx.Exec("INSERT INTO orders (id, customer_cpf, total, payment_method, created_at) VALUES (?, ?, ?, ?, ?)",
-		order.ID, order.CustomerCPF, order.Total, order.PaymentMethod, order.CreatedAt)
+	_, err = tx.Exec("INSERT INTO orders (id, customer_cpf, customer_name ,total, payment_method, created_at) VALUES (?, ?, ?, ?, ?, ?)",
+		order.ID, order.CustomerCPF, order.CustomerName, order.Total, order.PaymentMethod, order.CreatedAt)
 	if err != nil {
 		tx.Rollback()
 		return err
@@ -40,8 +41,8 @@ func (o *OrderDB) Create(order *entity.Order) error {
 
 func (o *OrderDB) GetByID(id string) (*entity.Order, error) {
 	var order entity.Order
-	err := o.DB.QueryRow("SELECT id, customer_cpf, total, payment_method, created_at FROM orders WHERE id = ?", id).
-		Scan(&order.ID, &order.CustomerCPF, &order.Total, &order.PaymentMethod, &order.CreatedAt)
+	err := o.DB.QueryRow("SELECT id, customer_cpf, customer_name, total, payment_method, created_at FROM orders WHERE id = ?", id).
+		Scan(&order.ID, &order.CustomerCPF, &order.CustomerName, &order.Total, &order.PaymentMethod, &order.CreatedAt)
 	if err != nil {
 		return nil, err
 	}
@@ -61,4 +62,47 @@ func (o *OrderDB) GetByID(id string) (*entity.Order, error) {
 	}
 
 	return &order, nil
+}
+
+func (o *OrderDB) GetAllOrders() ([]entity.Order, error) {
+
+	rows, err := o.DB.Query("SELECT id, customer_cpf, customer_name, total, payment_method, created_at FROM orders")
+	if err != nil {
+		fmt.Printf("Erro no Scan do pedido: %v\n", err)
+
+		return nil, err
+	}
+	defer rows.Close()
+
+	var orders []entity.Order
+	for rows.Next() {
+		var order entity.Order
+
+		err := rows.Scan(&order.ID, &order.CustomerCPF, &order.CustomerName, &order.Total, &order.PaymentMethod, &order.CreatedAt)
+		if err != nil {
+			return nil, err
+		}
+
+		itemRows, err := o.DB.Query("SELECT product_id, quantity, price FROM order_items WHERE order_id = ?", order.ID)
+		if err != nil {
+			fmt.Printf("Erro no Scan do pedido: %v\n", err)
+			return nil, err
+		}
+
+		for itemRows.Next() {
+			var item entity.OrderItem
+			if err := itemRows.Scan(&item.ProductID, &item.Quantity, &item.Price); err != nil {
+				itemRows.Close()
+				fmt.Printf("Erro no Scan do pedido: %v\n", err)
+
+				return nil, err
+			}
+			order.Items = append(order.Items, item)
+		}
+		itemRows.Close()
+
+		orders = append(orders, order)
+	}
+
+	return orders, nil
 }

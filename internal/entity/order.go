@@ -11,6 +11,7 @@ type OrderItem struct {
 type Order struct {
 	ID            string      `json:"id"`
 	CustomerCPF   string      `json:"customer_cpf"`
+	CustomerName  string      `json:"customer_name"`
 	Items         []OrderItem `json:"items"`
 	Total         float64     `json:"total"`
 	PaymentMethod string      `json:"payment_method"`

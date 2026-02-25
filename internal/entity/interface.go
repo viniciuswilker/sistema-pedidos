@@ -10,4 +10,5 @@ type ProductRepository interface {
 type OrderRepository interface {
 	Create(order *Order) error
 	GetByID(id string) (*Order, error)
+	GetAllOrders() ([]Order, error)
 }

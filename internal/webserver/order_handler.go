@@ -58,3 +58,16 @@ func (h *OrderHandler) CreateOrder(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusCreated)
 	json.NewEncoder(w).Encode(order)
 }
+
+func (h *OrderHandler) GetAllOrders(w http.ResponseWriter, r *http.Request) {
+
+	orders, err := h.OrderDB.GetAllOrders()
+	if err != nil {
+		http.Error(w, "Erro ao buscar pedidos", http.StatusNotFound)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(orders)
+
+}

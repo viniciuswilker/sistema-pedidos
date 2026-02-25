@@ -46,6 +46,7 @@ func main() {
 	r.Get("/products", productHandler.GetProducts)
 
 	r.Post("/orders", orderHandler.CreateOrder)
+	r.Get("/orders", orderHandler.GetAllOrders)
 
 	r.Get("/", func(w http.ResponseWriter, r *http.Request) {
 		tmpl, err := template.ParseFiles(
