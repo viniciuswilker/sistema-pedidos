@@ -29,6 +29,7 @@ func (h *OrderHandler) CreateOrder(w http.ResponseWriter, r *http.Request) {
 	order := &entity.Order{
 		ID:            uuid.New().String(),
 		CustomerCPF:   input.CustomerCPF,
+		CustomerName:  input.CustomerName,
 		PaymentMethod: input.PaymentMethod,
 		CreatedAt:     time.Now(),
 	}

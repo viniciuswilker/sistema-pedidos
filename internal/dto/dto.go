@@ -7,6 +7,7 @@ type OrderItemInput struct {
 
 type CreateOrderInput struct {
 	CustomerCPF   string           `json:"customer_cpf"`
+	CustomerName  string           `json:"customer_name"`
 	Items         []OrderItemInput `json:"items"`
 	PaymentMethod string           `json:"payment_method"`
 }

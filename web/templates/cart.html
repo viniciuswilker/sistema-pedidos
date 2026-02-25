@@ -18,6 +18,11 @@
                 </div>
 
                 <div class="input-group">
+                    <label>Nome</label>
+                    <input type="text" id="customer-name" placeholder="Nome" required>
+                </div>
+
+                <div class="input-group">
                     <label>Método de Pagamento</label>
                     <select id="payment-method">
                         <option value="credit_card">Cartão de Crédito</option>
@@ -110,9 +115,11 @@
 
         const customerCPF = document.getElementById('customer-cpf').value;
         const paymentMethod = document.getElementById('payment-method').value;
+        const customerName = document.getElementById('customer-name').value;
 
         const orderPayload = {
             customer_cpf: customerCPF,
+            customer_name: customerName,
             payment_method: paymentMethod,
             items: cart.map(item => ({
                 product_id: item.product_id,
