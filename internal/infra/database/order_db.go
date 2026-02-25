@@ -21,8 +21,8 @@ func (o *OrderDB) Create(order *entity.Order) error {
 		return err
 	}
 
-	_, err = tx.Exec("INSERT INTO orders (id, customer_cpf, customer_name ,total, payment_method, created_at) VALUES (?, ?, ?, ?, ?, ?)",
-		order.ID, order.CustomerCPF, order.CustomerName, order.Total, order.PaymentMethod, order.CreatedAt)
+	_, err = tx.Exec("INSERT INTO orders (id, customer_cpf, customer_name ,total, payment_method, order_status ,created_at) VALUES (?, ?, ?, ?, ?, ?, ?)",
+		order.ID, order.CustomerCPF, order.CustomerName, order.Total, order.PaymentMethod, "PENDENTE", order.CreatedAt)
 	if err != nil {
 		tx.Rollback()
 		return err
@@ -41,8 +41,8 @@ func (o *OrderDB) Create(order *entity.Order) error {
 
 func (o *OrderDB) GetByID(id string) (*entity.Order, error) {
 	var order entity.Order
-	err := o.DB.QueryRow("SELECT id, customer_cpf, customer_name, total, payment_method, created_at FROM orders WHERE id = ?", id).
-		Scan(&order.ID, &order.CustomerCPF, &order.CustomerName, &order.Total, &order.PaymentMethod, &order.CreatedAt)
+	err := o.DB.QueryRow("SELECT id, customer_cpf, customer_name, total, payment_method, order_status,created_at FROM orders WHERE id = ?", id).
+		Scan(&order.ID, &order.CustomerCPF, &order.CustomerName, &order.Total, &order.PaymentMethod, &order.OrderStatus, &order.CreatedAt)
 	if err != nil {
 		return nil, err
 	}
@@ -66,7 +66,7 @@ func (o *OrderDB) GetByID(id string) (*entity.Order, error) {
 
 func (o *OrderDB) GetAllOrders() ([]entity.Order, error) {
 
-	rows, err := o.DB.Query("SELECT id, customer_cpf, customer_name, total, payment_method, created_at FROM orders")
+	rows, err := o.DB.Query("SELECT id, customer_cpf, customer_name, total, payment_method, order_status, created_at FROM orders")
 	if err != nil {
 		fmt.Printf("Erro no Scan do pedido: %v\n", err)
 
@@ -78,7 +78,7 @@ func (o *OrderDB) GetAllOrders() ([]entity.Order, error) {
 	for rows.Next() {
 		var order entity.Order
 
-		err := rows.Scan(&order.ID, &order.CustomerCPF, &order.CustomerName, &order.Total, &order.PaymentMethod, &order.CreatedAt)
+		err := rows.Scan(&order.ID, &order.CustomerCPF, &order.CustomerName, &order.Total, &order.PaymentMethod, &order.OrderStatus, &order.CreatedAt)
 		if err != nil {
 			return nil, err
 		}

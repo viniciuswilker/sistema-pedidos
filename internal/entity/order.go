@@ -16,5 +16,6 @@ type Order struct {
 	Items         []OrderItem `json:"items"`
 	Total         float64     `json:"total"`
 	PaymentMethod string      `json:"payment_method"`
+	OrderStatus   string      `json:"order_status"`
 	CreatedAt     time.Time   `json:"created_at"`
 }
