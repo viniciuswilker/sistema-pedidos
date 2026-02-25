@@ -35,6 +35,7 @@
 
             orders.forEach(o => {
                 const card = document.createElement('div');
+                const statusInfo = getStatusStyle(o.order_status);
                 card.className = "order-card";
 
                 const itemsList = o.items.map(item =>
@@ -45,34 +46,43 @@
                 ).join('');
 
                 card.innerHTML = `
-                    <div class="card-header">
-                        <span class="order-id">#${o.id.substring(0, 8)}</span>
-                        <span class="order-date">${formatDate(o.created_at)}</span>
+                <div class="card-header">
+                    <span class="order-id">#${o.id.substring(0, 8)}</span>
+                    <span class="status-badge" style="background: ${statusInfo.bg}; color: ${statusInfo.color};">
+                        ${statusInfo.label}
+                    </span>
+                </div>
+                
+                <div class="card-body">
+                    <div class="info-group">
+                        <small>DATA</small>
+                        <span>${formatDate(o.created_at)}</span>
                     </div>
-                    
-                    <div class="card-body">
-                        <div class="info-group">
-                            <small>CLIENTE</small>
-                            <span>${o.customer_name || 'Consumidor Final'}</span>
-                        </div>
-                        <div class="info-group">
-                            <small>CPF</small>
-                            <span>${o.customer_cpf || 'Não informado'}</span>
-                        </div>
-                        <div class="items-box">
-                            <small>ITENS</small>
-                            <ul>${itemsList}</ul>
-                        </div>
+                    <div class="info-group">
+                        <small>CLIENTE</small>
+                        <span>${o.customer_name || 'Nome Não informado'}</span>
                     </div>
+                    <div class="info-group">
+                        <small>CPF</small>
+                        <span>${o.customer_cpf || 'Não informado'}</span>
+                    </div>
+                    <div class="items-box">
+                        <small>ITENS</small>
+                        <ul>${itemsList}</ul>
+                    </div>
+                </div>
 
-                    <div class="card-footer">
-                        <div class="total-box">
-                            <small>TOTAL</small>
-                            <span class="total-val">R$ ${o.total.toFixed(2)}</span>
-                        </div>
+                <div class="card-footer">
+                    <div class="total-box">
+                        <small>TOTAL</small>
+                        <span class="total-val">R$ ${o.total.toFixed(2)}</span>
+                    </div>
+                    <div style="text-align: right;">
+                        <small style="display:block; color:#888; font-size:10px;">PAGAMENTO</small>
                         <span class="badge-pay">${o.payment_method.toUpperCase()}</span>
                     </div>
-                `;
+                </div>
+            `;
                 container.appendChild(card);
             });
 
@@ -82,7 +92,16 @@
                 "<p class='status-msg error'>Erro ao carregar pedidos do servidor.</p>";
         }
     }
-
+    function getStatusStyle(status) {
+        const s = status ? status.toLowerCase() : 'pendente';
+        const styles = {
+            'pendente': { bg: '#fff3cd', color: '#856404', label: 'Pendente' },
+            'preparando': { bg: '#cce5ff', color: '#004085', label: 'Preparando' },
+            'finalizado': { bg: '#d4edda', color: '#155724', label: 'Finalizado' },
+            'cancelado': { bg: '#f8d7da', color: '#721c24', label: 'Cancelado' }
+        };
+        return styles[s] || { bg: '#eee', color: '#333', label: status };
+    }
     setInterval(searchOrders, 30000);
     window.onload = searchOrders;
 </script>
@@ -218,6 +237,14 @@
 
     .status-msg.error {
         color: #e31837;
+    }
+
+    .status-badge {
+        padding: 4px 10px;
+        border-radius: 20px;
+        font-size: 0.75rem;
+        font-weight: bold;
+        text-transform: uppercase;
     }
 </style>
 {{end}}

@@ -29,13 +29,20 @@
 
     <script src="/static/js/cart.js"></script>
     <script>
-        setInterval(() => {
-            const now = new Date();
-            document.getElementById('current-time').innerText =
-                now.toLocaleTimeString('pt-BR', { hour: '2-刻', minute: '2-digit' });
-        }, 1000);
+
+        document.addEventListener("DOMContentLoaded", () => {
+            const tdy = new Date();
+            const hour = tdy.getHours();
+            const min = tdy.getMinutes();
+            const statusTime = document.getElementById('current-time')
+            statusTime.innerText = `${hour}:${min}`
+
+        })
+
     </script>
 </body>
+
+
 
 </html>
 {{end}}

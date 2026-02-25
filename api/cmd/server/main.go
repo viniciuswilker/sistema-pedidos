@@ -15,7 +15,6 @@ import (
 )
 
 func main() {
-	fmt.Printf("Servidor INICIANDO\n")
 
 	cfg, err := configs.LoadConfig(".")
 	if err != nil {
