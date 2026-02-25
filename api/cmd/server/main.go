@@ -80,6 +80,20 @@ func main() {
 		tmpl.ExecuteTemplate(w, "layout", nil)
 	})
 
+	r.Get("/orders-list", func(w http.ResponseWriter, r *http.Request) {
+		tpml, err := template.ParseFiles(
+			"web/templates/layout.html",
+			"web/templates/orders.html",
+		)
+
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		tpml.ExecuteTemplate(w, "layout", nil)
+
+	})
+
 	fmt.Printf("Servidor rodando na porta %s\n", cfg.WebServerPort)
 	http.ListenAndServe(":8010", r)
 }

@@ -83,7 +83,11 @@ func (o *OrderDB) GetAllOrders() ([]entity.Order, error) {
 			return nil, err
 		}
 
-		itemRows, err := o.DB.Query("SELECT product_id, quantity, price FROM order_items WHERE order_id = ?", order.ID)
+		itemRows, err := o.DB.Query(`
+            SELECT i.product_id, p.name, i.quantity, i.price 
+            FROM order_items i 
+            INNER JOIN products p ON i.product_id = p.id 
+            WHERE i.order_id = ?`, order.ID)
 		if err != nil {
 			fmt.Printf("Erro no Scan do pedido: %v\n", err)
 			return nil, err
@@ -91,7 +95,7 @@ func (o *OrderDB) GetAllOrders() ([]entity.Order, error) {
 
 		for itemRows.Next() {
 			var item entity.OrderItem
-			if err := itemRows.Scan(&item.ProductID, &item.Quantity, &item.Price); err != nil {
+			if err := itemRows.Scan(&item.ProductID, &item.ProductName, &item.Quantity, &item.Price); err != nil {
 				itemRows.Close()
 				fmt.Printf("Erro no Scan do pedido: %v\n", err)
 

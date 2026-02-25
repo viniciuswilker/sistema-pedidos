@@ -1,0 +1,223 @@
+{{define "content"}}
+<div class="admin-container">
+    <header class="admin-header">
+        <h2>Painel de Pedidos</h2>
+        <button class="btn-refresh" onclick="searchOrders()">Atualizar Agora</button>
+    </header>
+
+    <div class="orders-grid" id="orders-list">
+        <p class="status-msg">Carregando pedidos...</p>
+    </div>
+</div>
+
+<script>
+    function formatDate(dateString) {
+        const date = new Date(dateString);
+        return date.toLocaleString('pt-BR');
+    }
+
+    async function searchOrders() {
+        try {
+            const url = "/orders";
+            const response = await fetch(url);
+
+            if (!response.ok) throw new Error("Erro ao buscar dados");
+
+            const orders = await response.json();
+            const container = document.getElementById('orders-list');
+
+            container.innerHTML = "";
+
+            if (!orders || orders.length === 0) {
+                container.innerHTML = "<p class='status-msg'>Nenhum pedido realizado hoje.</p>";
+                return;
+            }
+
+            orders.forEach(o => {
+                const card = document.createElement('div');
+                card.className = "order-card";
+
+                const itemsList = o.items.map(item =>
+                    `<li>
+                        <strong>${item.quantity}x</strong> ${item.product_name} 
+                        <small>(R$ ${item.price.toFixed(2)})</small>
+                    </li>`
+                ).join('');
+
+                card.innerHTML = `
+                    <div class="card-header">
+                        <span class="order-id">#${o.id.substring(0, 8)}</span>
+                        <span class="order-date">${formatDate(o.created_at)}</span>
+                    </div>
+                    
+                    <div class="card-body">
+                        <div class="info-group">
+                            <small>CLIENTE</small>
+                            <span>${o.customer_name || 'Consumidor Final'}</span>
+                        </div>
+                        <div class="info-group">
+                            <small>CPF</small>
+                            <span>${o.customer_cpf || 'Não informado'}</span>
+                        </div>
+                        <div class="items-box">
+                            <small>ITENS</small>
+                            <ul>${itemsList}</ul>
+                        </div>
+                    </div>
+
+                    <div class="card-footer">
+                        <div class="total-box">
+                            <small>TOTAL</small>
+                            <span class="total-val">R$ ${o.total.toFixed(2)}</span>
+                        </div>
+                        <span class="badge-pay">${o.payment_method.toUpperCase()}</span>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+
+        } catch (error) {
+            console.error("Erro na requisição:", error);
+            document.getElementById('orders-list').innerHTML =
+                "<p class='status-msg error'>Erro ao carregar pedidos do servidor.</p>";
+        }
+    }
+
+    setInterval(searchOrders, 30000);
+    window.onload = searchOrders;
+</script>
+
+<style>
+    .admin-container {
+        padding: 30px;
+        max-width: 1200px;
+        margin: 0 auto;
+    }
+
+    .admin-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 25px;
+    }
+
+    .admin-header h2 {
+        color: #292929;
+        margin: 0;
+    }
+
+    .btn-refresh {
+        background: #ffbc0d;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 8px;
+        font-weight: bold;
+        cursor: pointer;
+    }
+
+    .orders-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: 20px;
+    }
+
+    .order-card {
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .card-header {
+        background: #292929;
+        color: white;
+        padding: 12px 15px;
+        display: flex;
+        justify-content: space-between;
+        font-size: 0.8rem;
+    }
+
+    .order-id {
+        font-weight: bold;
+        color: #ffbc0d;
+    }
+
+    .card-body {
+        padding: 15px;
+        flex-grow: 1;
+    }
+
+    .info-group {
+        margin-bottom: 10px;
+    }
+
+    .info-group small {
+        display: block;
+        color: #888;
+        font-size: 0.7rem;
+        font-weight: bold;
+    }
+
+    .info-group span {
+        font-weight: 500;
+        font-size: 1rem;
+    }
+
+    .items-box {
+        background: #f9f9f9;
+        padding: 10px;
+        border-radius: 6px;
+        margin-top: 10px;
+    }
+
+    .items-box small {
+        color: #888;
+        font-size: 0.7rem;
+        font-weight: bold;
+    }
+
+    .items-box ul {
+        margin: 5px 0 0 0;
+        padding-left: 18px;
+        font-size: 0.85rem;
+        color: #444;
+    }
+
+    .card-footer {
+        padding: 15px;
+        border-top: 1px solid #eee;
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-end;
+    }
+
+    .total-val {
+        font-size: 1.4rem;
+        font-weight: bold;
+        color: #e31837;
+        display: block;
+    }
+
+    .badge-pay {
+        background: #e8f5e9;
+        color: #2e7d32;
+        padding: 4px 8px;
+        border-radius: 4px;
+        font-size: 0.7rem;
+        font-weight: bold;
+    }
+
+    .status-msg {
+        grid-column: 1 / -1;
+        text-align: center;
+        padding: 50px;
+        color: #666;
+    }
+
+    .status-msg.error {
+        color: #e31837;
+    }
+</style>
+{{end}}
