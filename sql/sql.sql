@@ -20,7 +20,7 @@ CREATE TABLE categorias (
 DROP TABLE IF EXISTS produtos;
 CREATE TABLE produtos (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    categoria_id INT,
+    categoria_id INT NOT NULL,
     nome VARCHAR(100) NOT NULL,
     descricao TEXT,
     preco DECIMAL(10, 2) NOT NULL,
