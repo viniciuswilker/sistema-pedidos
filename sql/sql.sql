@@ -83,3 +83,22 @@ CREATE TABLE notas (
 ) ENGINE=InnoDB;
 
 CREATE INDEX idx_numero_nota ON notas(numero_nota);
+
+
+
+
+
+
+
+-- CATEGORIAS
+insert into categorias (nome) values ("hamburguer");
+insert into categorias (nome) values ("bebidas");
+insert into categorias (nome) values ("doces");
+
+
+-- PRODUTOS
+insert into produtos (categoria_id, nome, descricao, preco, disponivel) values (2, "Coca Cola 350ml" , "Lata de Coca Cola 350ml", 4.00, true);
+
+insert into produtos (categoria_id, nome, descricao, preco, disponivel) values (2, "Franta 350ml" , "Franta 350ml", 3.99, true);
+
+insert into produtos (categoria_id, nome, descricao, preco, disponivel) values (1, "X TUDO" , "X tudo com queijo, hamburguer duplo, bacon, etc.", 25.00, true);

@@ -22,6 +22,7 @@ func Configurar(r *mux.Router) *mux.Router {
 		rotasUsuarios,
 		rotasAuth,
 		rotasAdmin,
+		rotasCategorias,
 	}
 
 	for _, grupo := range gruposAPI {
